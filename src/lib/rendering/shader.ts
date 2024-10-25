@@ -1,12 +1,12 @@
 import { assertExists } from "$lib/utils/assert";
+import * as glm from "gl-matrix";
 
-export class Shader {
-  program: WebGLProgram | null = null;
+export default class Shader {
+  private program: WebGLProgram | null = null;
   attribs: { [id: string]: GLint } = {};
-  uniforms: { [id: string]: WebGLUniformLocation } = {};
-
+  private uniforms: { [id: string]: WebGLUniformLocation } = {};
   private gl: WebGLRenderingContext;
-  
+
   constructor(gl: WebGLRenderingContext, vsSource: string, fgSource: string, locations: string[]) {
     this.gl = gl;
 
@@ -33,6 +33,19 @@ export class Shader {
     this._processLocations(this.program, locations);
   }
 
+  bind(): void {
+    this.gl.useProgram(this.program);
+  }
+
+  setUniformMat4(loc: string, matrix: glm.mat4) {
+    const location = this.uniforms[loc];
+    if (!assertExists(location, `Failed to set location: ${loc}`)) {
+      return;
+    }
+
+    this.gl.uniformMatrix4fv(location, false, matrix);
+  }
+
   private _processLocations(program: WebGLProgram, locations: string[]): void {
     for (const loc of locations) {
       if (loc[0] === 'u') {
@@ -43,7 +56,7 @@ export class Shader {
 
         this.uniforms[loc] = location;
       } else if (loc[0] === 'a') {
-        const location  = this.gl.getAttribLocation(program, loc);
+        const location = this.gl.getAttribLocation(program, loc);
         if (!assertExists(location, "Failed to find attrib location")) {
           continue;
         }

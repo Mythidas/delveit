@@ -1,26 +1,45 @@
 <script lang="ts">
-	import { Renderer2D } from "$lib/rendering/renderer2d";
+	import Renderer from "$lib/rendering/renderer";
+	import Camera from "$lib/rendering/camera";
 	import { assertExists } from "$lib/utils/assert";
 
 	let props = $props();
 	let canvas: HTMLCanvasElement;
 
 	$effect(() => {
-		if (!assertExists(canvas, "Unable to find gl_canvas. Reload the page to mount the canvas.")) {
+		if (
+			!assertExists(
+				canvas,
+				"Unable to find gl_canvas. Reload the page to mount the canvas.",
+			)
+		) {
 			return;
 		}
 
 		const gl = canvas.getContext("webgl");
-		if (!assertExists(gl, "Unable to initialize WebGL. Your browser or machine may not support it.")) {
+		if (
+			!assertExists(
+				gl,
+				"Unable to initialize WebGL. Your browser or machine may not support it.",
+			)
+		) {
 			return;
 		}
 
 		const pos = { x: 0, y: 0, z: 0 };
 
-		const renderer = new Renderer2D(gl, props.data.vertSource, props.data.fragSource);
+		const renderer = new Renderer(
+			gl,
+			props.data.vertSource,
+			props.data.fragSource,
+		);
+
+		const camera = new Camera();
 
 		setInterval(() => {
-			renderer.drawScene(pos);
+			renderer.beginScene(camera);
+			renderer.testDrawSprite(pos);
+			renderer.endScene();
 		}, 16);
 	});
 </script>

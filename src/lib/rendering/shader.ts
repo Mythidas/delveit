@@ -33,11 +33,15 @@ export default class Shader {
     this._processLocations(this.program, locations);
   }
 
+  destruct(): void {
+    this.gl.deleteProgram(this.program);
+  }
+
   bind(): void {
     this.gl.useProgram(this.program);
   }
 
-  setUniformMat4(loc: string, matrix: glm.mat4) {
+  setUniformMat4(loc: string, matrix: glm.mat4): void {
     const location = this.uniforms[loc];
     if (!assertExists(location, `Failed to set location: ${loc}`)) {
       return;

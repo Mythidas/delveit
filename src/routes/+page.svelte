@@ -2,6 +2,7 @@
 	import Renderer from "$lib/rendering/renderer";
 	import Camera from "$lib/rendering/camera";
 	import { assertExists } from "$lib/utils/assert";
+	import { DelvEngine } from "$lib/core/delvengine";
 
 	let props = $props();
 	let canvas: HTMLCanvasElement;
@@ -12,55 +13,33 @@
 	});
 
 	$effect(() => {
-		if (
-			!assertExists(
-				canvas,
-				"Unable to find gl_canvas. Reload the page to mount the canvas.",
-			)
-		) {
+		if (!canvas) {
+			console.error("Failed to find gl_canvas. Try reloading the page");
 			return;
 		}
 
 		const gl = canvas.getContext("webgl");
-		if (
-			!assertExists(
-				gl,
-				"Unable to initialize WebGL. Your browser or machine may not support it.",
-			)
-		) {
+		if (!gl) {
+			console.error("Failed to get WebGL. Your browser may not support it");
 			return;
 		}
 
-		const pos = { x: 0, y: 0, z: 0 };
-
-		const renderer = Renderer.build(
-			gl,
+		const engine = DelvEngine.build(
 			props.data.vertSource,
 			props.data.fragSource,
 		);
-
-		if (!assertExists(renderer, "Failed to create renderer")) {
+		if (!assertExists(engine, "Failed to create engine")) {
 			return;
 		}
 
 		const camera = new Camera();
 
-		let lastFrame = Date.now();
-
 		const interval = setInterval(() => {
-			stats.fps = 1000 / (Date.now() - lastFrame);
-			lastFrame = Date.now();
-
-			renderer.beginScene(camera);
-			renderer.draw(pos);
-			renderer.draw({ x: 1, y: 1, z: 0.0 });
-			renderer.endScene();
-
-			stats.batches = renderer.getBatchInfo().drawCalls;
+			engine.update(camera);
 		}, 16);
 
 		return () => {
-			renderer.destruct();
+			engine.destruct();
 			clearInterval(interval);
 		};
 	});
@@ -81,6 +60,6 @@
 			<p>FPS: <span>{stats.fps.toPrecision(3)}</span></p>
 			<p>BATCHES: <span>{stats.batches}</span></p>
 		</div>
-		<canvas bind:this={canvas} width={720} height={720}></canvas>
+		<canvas id="gl_canvas" bind:this={canvas} width={720} height={720}></canvas>
 	</div>
 </main>

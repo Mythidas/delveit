@@ -28,7 +28,15 @@ export default class Camera extends Entity {
 
   getModelViewMatrix(): glm.mat4 {
     const identity = glm.mat4.create();
-    glm.mat4.translate(identity, this.modelViewMatrix, this.position);
+    glm.mat4.translate(identity, this.modelViewMatrix, this._getInversePosition());
     return identity;
+  }
+
+  private _getInversePosition(): glm.vec3 {
+    const inverse = glm.vec3.create();
+    inverse[0] = -this.position[0];
+    inverse[1] = -this.position[1];
+    inverse[2] = this.position[2];
+    return inverse;
   }
 }

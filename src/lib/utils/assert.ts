@@ -6,3 +6,12 @@ export function assertExists<T>(obj: T | null | undefined, error: string): obj i
 
   return true;
 }
+
+export function assertNotExists<T>(obj: T | null, error: string): obj is null {
+  if (obj !== null) {
+    console.error(error);
+    return false;
+  }
+
+  return true;
+}

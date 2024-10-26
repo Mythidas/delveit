@@ -32,7 +32,17 @@ export default class Renderer {
     this.shader.destruct();
   }
 
-  static build(gl: WebGLRenderingContext, vsSource: string, fgSource: string): Renderer | null {
+  static build(vsSource: string, fgSource: string): Renderer | null {
+    const canvas = document.getElementById("gl_canvas") as HTMLCanvasElement;
+    if (!assertExists(canvas, "Failed to find gl_canvas. Please reload the page.")) {
+      return null;
+    }
+
+    const gl = canvas.getContext("webgl");
+    if (!assertExists(gl, "Failed to get WebGL. Your browser may not support it.")) {
+      return null;
+    }
+
     const shader = new Shader(gl, vsSource, fgSource, [
       "aVertexPosition",
       "uProjectionMatrix",
